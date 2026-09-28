@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Project Tracker</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>📦 Project Tracker</h1>
+    <nav>
+      <button class="tab active" data-tab="projects">Projects</button>
+      <button class="tab" data-tab="accounts">Accounts</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- PROJECTS VIEW -->
+    <section id="view-projects" class="view active">
+      <div class="toolbar">
+        <input id="search" type="text" placeholder="Search by name, tag, hosting, db..." />
+        <select id="filterStatus">
+          <option value="">All statuses</option>
+          <option value="planning">Planning</option>
+          <option value="in_progress">In progress</option>
+          <option value="deployed">Deployed</option>
+          <option value="broken">Broken</option>
+          <option value="paused">Paused</option>
+          <option value="archived">Archived</option>
+        </select>
+        <button id="btnNewProject" class="primary">+ Add Project</button>
+      </div>
+      <div id="projectGrid" class="grid"></div>
+    </section>
+
+    <!-- ACCOUNTS VIEW -->
+    <section id="view-accounts" class="view">
+      <div class="toolbar">
+        <input id="searchAccounts" type="text" placeholder="Search accounts by service or email..." />
+        <button id="btnNewAccount" class="primary">+ Add Account</button>
+      </div>
+      <table class="table" id="accountsTable">
+        <thead>
+          <tr><th>Service</th><th>Email</th><th>Label</th><th>Plan</th><th>Notes</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- PROJECT MODAL -->
+  <div id="projectModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="projectModalTitle">Add Project</h2>
+        <button class="close" data-close>&times;</button>
+      </div>
+      <form id="projectForm">
+        <input type="hidden" id="p_id" />
+
+        <fieldset>
+          <legend>Basics</legend>
+          <div class="row">
+            <label>Name *<input id="p_name" required /></label>
+            <label>Status
+              <select id="p_status">
+                <option value="planning">Planning</option>
+                <option value="in_progress">In progress</option>
+                <option value="deployed">Deployed</option>
+                <option value="broken">Broken</option>
+                <option value="paused">Paused</option>
+                <option value="archived">Archived</option>
+              </select>
+            </label>
+            <label>Priority
+              <select id="p_priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+          </div>
+          <label>Description<textarea id="p_description" rows="2"></textarea></label>
+          <div class="row">
+            <label>Category<input id="p_category" placeholder="e.g. web app, bot, api" /></label>
+            <label>Tech stack<input id="p_tech_stack" placeholder="React, Node, Express..." /></label>
+            <label>Tags<input id="p_tags" placeholder="comma,separated" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Repo &amp; Live URL</legend>
+          <div class="row">
+            <label>GitHub repo URL<input id="p_repo_url" /></label>
+            <label>Repo account/org<input id="p_repo_account" /></label>
+          </div>
+          <div class="row">
+            <label>Live URL<input id="p_live_url" /></label>
+            <label>Custom domain<input id="p_custom_domain" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Hosting</legend>
+          <div class="row">
+            <label>Provider<input id="p_hosting_provider" placeholder="Render / Vercel / Netlify..." /></label>
+            <label>Account email<input id="p_hosting_account_email" /></label>
+            <label>Account label<input id="p_hosting_account_label" placeholder="personal / work / client-X" /></label>
+          </div>
+          <div class="row">
+            <label>Service name<input id="p_hosting_service_name" placeholder="name on the host dashboard" /></label>
+            <label>Plan<input id="p_hosting_plan" placeholder="Free / Starter..." /></label>
+            <label>Region<input id="p_hosting_region" /></label>
+          </div>
+          <label>Auto-deploy branch<input id="p_auto_deploy_branch" placeholder="main" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Databases (add one row per database used in this project)</legend>
+          <div id="dbEntries"></div>
+          <button type="button" id="btnAddDb" class="secondary">+ Add database</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Firebase / Google Cloud</legend>
+          <div class="row">
+            <label>Firebase project ID<input id="p_firebase_project_id" /></label>
+            <label>Firebase account email<input id="p_firebase_account_email" /></label>
+          </div>
+          <div class="row">
+            <label>Google Cloud project ID<input id="p_google_cloud_project_id" /></label>
+            <label>Google Cloud account email<input id="p_google_cloud_account_email" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Play Store</legend>
+          <div class="row">
+            <label>Package name<input id="p_play_store_package_name" placeholder="com.example.app" /></label>
+            <label>Play Console account email<input id="p_play_store_account_email" /></label>
+          </div>
+          <div class="row">
+            <label>Play Store URL<input id="p_play_store_url" /></label>
+            <label>Status<input id="p_play_store_status" placeholder="internal testing / live / draft..." /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>DNS / Domain</legend>
+          <div class="row">
+            <label>DNS provider<input id="p_dns_provider" placeholder="Namecheap / Cloudflare..." /></label>
+            <label>DNS account email<input id="p_dns_account_email" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Environment variables (names/location only — never store secrets here)</legend>
+          <label>Where env vars live<input id="p_env_vars_location" placeholder="Render dashboard > env / .env file locally" /></label>
+          <label>Env var names<input id="p_env_var_names" placeholder="MONGO_URI, JWT_SECRET, ..." /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Monitoring / Misc</legend>
+          <div class="row">
+            <label>Monitoring provider<input id="p_monitoring_provider" placeholder="UptimeRobot, Sentry..." /></label>
+            <label>Monitoring account email<input id="p_monitoring_account_email" /></label>
+          </div>
+          <label>Last deployed<input id="p_last_deployed_at" type="date" /></label>
+          <label>Notes<textarea id="p_notes" rows="3"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Custom fields (add anything else)</legend>
+          <div id="extraFields"></div>
+          <button type="button" id="btnAddField" class="secondary">+ Add custom field</button>
+        </fieldset>
+
+        <div class="modal-actions">
+          <button type="button" class="danger" id="btnDeleteProject" style="display:none">Delete</button>
+          <div class="spacer"></div>
+          <button type="button" data-close class="secondary">Cancel</button>
+          <button type="submit" class="primary">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ACCOUNT MODAL -->
+  <div id="accountModal" class="modal-overlay">
+    <div class="modal small">
+      <div class="modal-head">
+        <h2 id="accountModalTitle">Add Account</h2>
+        <button class="close" data-close>&times;</button>
+      </div>
+      <form id="accountForm">
+        <input type="hidden" id="a_id" />
+        <label>Service *<input id="a_service" required placeholder="Render, Firebase, MongoDB Atlas..." /></label>
+        <label>Email<input id="a_email" /></label>
+        <label>Label<input id="a_label" placeholder="personal / college / client-X" /></label>
+        <label>Plan<input id="a_plan" /></label>
+        <label>Notes<textarea id="a_notes" rows="3"></textarea></label>
+        <div class="modal-actions">
+          <button type="button" class="danger" id="btnDeleteAccount" style="display:none">Delete</button>
+          <div class="spacer"></div>
+          <button type="button" data-close class="secondary">Cancel</button>
+          <button type="submit" class="primary">Save Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PROJECT DETAIL DRAWER -->
+  <div id="detailOverlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="detailTitle"></h2>
+        <button class="close" data-close>&times;</button>
+      </div>
+      <div id="detailBody" class="detail-body"></div>
+      <div class="modal-actions">
+        <div class="spacer"></div>
+        <button type="button" class="secondary" id="btnEditFromDetail">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
